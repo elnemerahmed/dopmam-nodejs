@@ -1,33 +1,27 @@
-const config = require( './configuration' );
-
-exports.connectionProfile = ( organization ) => {
-    return config[ organization ][ 'connection-profile' ];
+exports.getConnectionProfile = ( organization ) => {
+    return `connection-${ organization }.json`;
 };
 
-exports.mspId = ( organization ) => {
-    return config[ organization ][ 'msp' ];
+exports.getMSP = ( organization ) => {
+    return `${organization.charAt(0).toUpperCase()}${organization.slice(1)}MSP`;
 };
 
-exports.caHostName = ( organization ) => {
-    return config[ organization ][ 'ca' ][ 'name' ];
+exports.getCAHost = ( organization ) => {
+    return `ca.${organization}.moh.ps`;
 };
 
-exports.caAdminId = ( organization ) => {
-    return config[ organization ][ 'ca' ][ 'ca-admin' ]['user'];
+exports.getCAAdminId = () => {
+    return `admin`;
 };
 
-exports.caAdminPassword = ( organization ) => {
-    return config[ organization ][ 'ca' ][ 'ca-admin' ]['password'];
+exports.getCAAdminPassword = ( ) => {
+    return `adminpw`;
 };
 
-exports.allChannels = ( organization ) => {
-    return config[ organization ][ 'channels' ];
+exports.getChannelName = ( organization ) => {
+    return `dopmam-${organization}`;
 };
 
-exports.firstChannel = ( organization ) => {
-    return config[ organization ][ 'channels' ][ 0 ];
-};
-
-exports.chaincodeName = ( ) => {
-    return config[ 'chaincode-name' ];
-};
+exports.getUserLabel = (user, organization) => {
+    return `${ user }@${ organization }.moh.ps`;
+}

@@ -1,9 +1,8 @@
 
-const { mspId, caHostName, caAdminId, caAdminPassword } = require( './utils.js' );
+const { getCAHost, getMSP, getCAAdminId, getCAAdminPassword, getUserLabel } = require( './utils.js' );
 
 exports.buildCAClient = ( FabricCAServices, ccp, organization ) => {
-    const hostName = caHostName( organization );
-	const caInfo = ccp.certificateAuthorities[hostName];
+	const caInfo = ccp.certificateAuthorities[getCAHost(organization)];
 	const caTLSCACerts = caInfo.tlsCACerts.pem;
 	const caClient = new FabricCAServices(caInfo.url, { trustedRoots: caTLSCACerts, verify: false }, caInfo.caName);
 	console.log(`Built a CA Client named ${caInfo.caName}`);
@@ -12,10 +11,11 @@ exports.buildCAClient = ( FabricCAServices, ccp, organization ) => {
 
 exports.enrollAdmin = async (caClient, wallet, organization) => {
     try {
-        const msp = mspId( organization );
-        const adminId = caAdminId( organization );
-        const password = caAdminPassword( organization );
-		const identity = await wallet.get(adminId);
+        const MSP = getMSP( organization );
+		const adminId = getCAAdminId( );
+		const adminLabel = getUserLabel(adminId, organization );
+        const password = getCAAdminPassword( );
+		const identity = await wallet.get(adminLabel);
 		if (identity) {
 			console.log('An identity for the admin user already exists in the wallet');
 			return;
@@ -26,26 +26,28 @@ exports.enrollAdmin = async (caClient, wallet, organization) => {
 				certificate: enrollment.certificate,
 				privateKey: enrollment.key.toBytes(),
 			},
-			mspId: msp,
+			mspId: MSP,
 			type: 'X.509',
 		};
-		await wallet.put(adminId, x509Identity);
+		await wallet.put(adminLabel, x509Identity);
 		console.log('Successfully enrolled admin user and imported it into the wallet');
 	} catch (error) {
 		console.error(`Failed to enroll admin user : ${error}`);
 	}
 };
 
-exports.registerAndEnrollUser = async (caClient, wallet, organization, userId, affiliation) => {
+exports.registerAndEnrollUser = async (caClient, wallet, organization, userId) => {
 	try {
-		const userIdentity = await wallet.get(userId);
+		const userLabel = getUserLabel( userId, organization );
+		const userIdentity = await wallet.get(userLabel);
 		if (userIdentity) {
 			console.log(`An identity for the user ${userId} already exists in the wallet`);
 			return;
 		}
 
-        const adminId = caAdminId( organization );
-        const adminIdentity = await wallet.get( adminId );
+		const adminId = getCAAdminId( );
+		const adminLabel = getUserLabel( adminId, organization );
+        const adminIdentity = await wallet.get( adminLabel );
 		if (!adminIdentity) {
 			console.log('An identity for the admin user does not exist in the wallet');
 			console.log('Enroll the admin user before retrying');
@@ -56,25 +58,35 @@ exports.registerAndEnrollUser = async (caClient, wallet, organization, userId, a
         const adminUser = await provider.getUserContext( adminIdentity, adminId );
         
 		const secret = await caClient.register({
-			//affiliation: affiliation,
 			enrollmentID: userId,
 			role: 'client'
-		}, adminUser);
+		}, adminUser );
+		
 		const enrollment = await caClient.enroll({
 			enrollmentID: userId,
 			enrollmentSecret: secret
-		});
+		} );
+		
 		const x509Identity = {
 			credentials: {
 				certificate: enrollment.certificate,
 				privateKey: enrollment.key.toBytes(),
 			},
-			mspId: mspId(organization),
+			mspId: getMSP(organization),
 			type: 'X.509',
 		};
-		await wallet.put(userId, x509Identity);
-		console.log(`Successfully registered and enrolled user ${userId} and imported it into the wallet`);
+		await wallet.put(userLabel, x509Identity);
+		console.log(`Successfully registered and enrolled user ${userLabel} and imported it into the wallet`);
 	} catch (error) {
 		console.error(`Failed to register user : ${error}`);
 	}
+};
+
+exports.list = async (wallet) => {
+	let identities = [];
+	let list = await wallet.list();
+	for ( var i = 0; i < list.length; i++ ) {
+		identities.push(list[i].label);
+	}
+	return identities;
 };
