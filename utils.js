@@ -22,6 +22,10 @@ exports.getChannelName = ( organization ) => {
     return `dopmam-${organization}`;
 };
 
+exports.getChaincodeName = ( ) => {
+    return `CHAINCODE_NAME`;
+};
+
 exports.getUserLabel = (user, organization) => {
     return `${ user }@${ organization }.moh.ps`;
 }

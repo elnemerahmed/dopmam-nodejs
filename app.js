@@ -3,13 +3,14 @@ const { buildCCP, buildWallet } = require('./ccp.js');
 const { Gateway, Wallets } = require('fabric-network');
 const FabricCAServices = require( 'fabric-ca-client' );
 const { enrollAdmin, registerAndEnrollUser } = require( './ca.js' );
-const { getChannelName, getUserLabel } = require('./utils.js');
+const { getChannelName, getUserLabel, getChaincodeName } = require('./utils.js');
 const { buildCAClient } = require( './ca.js' );
 
 // Variables
 const organization = 'shifa';
 const user = 'waleed.mortaja';
 const channel = getChannelName( organization );
+const chaincode = getChaincodeName();
 
 async function main () { 
     const ccp = buildCCP( organization );
