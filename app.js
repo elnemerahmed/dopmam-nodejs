@@ -17,7 +17,7 @@ async function main () {
     const caClient = buildCAClient( FabricCAServices, ccp, organization );
     const wallet = await buildWallet(Wallets, organization);
     await enrollAdmin(caClient, wallet, organization);
-    await registerAndEnrollUser( caClient, wallet, organization, user );
+    await registerAndEnrollUser( caClient, wallet, organization, user, 'Waleed Mortaja', '0592224157', 'general', 'doctor' );
     const gateway = new Gateway();
 
     let connectionOptions = {
@@ -31,7 +31,9 @@ async function main () {
     await gateway.connect( ccp, connectionOptions );
     
     const network = await gateway.getNetwork( channel );
-    const contract = network.getContract(chaincode);
+    const contract = network.getContract( chaincode );
+
+    const result = await contract.evaluateTransaction('getMyCertificate');
 }
 
 main();

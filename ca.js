@@ -36,7 +36,7 @@ exports.enrollAdmin = async (caClient, wallet, organization) => {
 	}
 };
 
-exports.registerAndEnrollUser = async (caClient, wallet, organization, userId) => {
+exports.registerAndEnrollUser = async (caClient, wallet, organization, userId, name, phone, department, role) => {
 	try {
 		const userLabel = getUserLabel( userId, organization );
 		const userIdentity = await wallet.get(userLabel);
@@ -64,7 +64,7 @@ exports.registerAndEnrollUser = async (caClient, wallet, organization, userId) =
 		
 		const enrollment = await caClient.enroll({
 			enrollmentID: userId,
-			enrollmentSecret: secret
+			enrollmentSecret: secret,
 		} );
 		
 		const x509Identity = {
@@ -74,6 +74,12 @@ exports.registerAndEnrollUser = async (caClient, wallet, organization, userId) =
 			},
 			mspId: getMSP(organization),
 			type: 'X.509',
+			attrs: [ {
+				name: name,
+				phone: phone,
+				department: department,
+				role: role
+			}]
 		};
 		await wallet.put(userLabel, x509Identity);
 		console.log(`Successfully registered and enrolled user ${userLabel} and imported it into the wallet`);
