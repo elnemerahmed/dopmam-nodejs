@@ -8,11 +8,8 @@
   },
   "author": "Ahmed El Nemer, Waleed Mortaja",
   "license": "ISC",
-  "devDependencies": {
-    "nodemon": "^2.0.7"
-  },
   "dependencies": {
-    "fabric-ca-client": "^2.1.0",
-    "fabric-network": "^2.1.0"
+    "fabric-ca-client": "^2.2.4",
+    "fabric-network": "^2.2.4"
   }
 }
